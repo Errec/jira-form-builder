@@ -21,9 +21,15 @@ if "form_data" not in st.session_state:
         "fields": []
     }
 
+if "uploaded_form_loaded" not in st.session_state:
+    st.session_state.uploaded_form_loaded = False
 
-# ---- Form Files Menu ----
-st.sidebar.header("Form Files")
+if "uploaded_file" not in st.session_state:
+    st.session_state.uploaded_file = None
+
+
+# ---- Sidebar ----
+st.sidebar.header("Form")
 
 form_mode = st.sidebar.radio(
     "Start with:",
@@ -31,20 +37,52 @@ form_mode = st.sidebar.radio(
     index=0
 )
 
+# ---- Upload Section ----
 if form_mode == "Import Form":
-    form_files = parser.list_form_files()
-    selected_file = st.sidebar.selectbox("Select YAML File", form_files)
+    uploaded_file = st.sidebar.file_uploader(
+        "Upload YAML", type=["yaml", "yml"], key="file_uploader"
+    )
 
-    if selected_file:
+    if uploaded_file and not st.session_state.uploaded_form_loaded:
         try:
-            st.session_state.form_data = parser.load_form(selected_file) or {
+            imported_form = parser.load_uploaded_yaml(uploaded_file)
+            if imported_form:
+                st.session_state.form_data = imported_form
+                st.session_state.uploaded_form_loaded = True
+                st.session_state.uploaded_file = uploaded_file
+                st.sidebar.success("Form imported successfully.")
+                st.rerun()
+            else:
+                st.sidebar.error("Invalid YAML content.")
+        except Exception as error:
+            st.sidebar.error(f"Error loading file: {error}")
+
+    if st.session_state.uploaded_form_loaded:
+        st.sidebar.markdown("---")
+        st.sidebar.subheader("File Management")
+
+        remove_action = st.sidebar.radio(
+            "Remove uploaded file?",
+            ["No Action", "Remove File and Keep Form", "Remove File and Clear Form"],
+            index=0
+        )
+
+        if remove_action == "Remove File and Keep Form":
+            st.session_state.uploaded_form_loaded = False
+            st.session_state.uploaded_file = None
+            st.sidebar.success("File removed. Form kept.")
+            st.rerun()
+
+        if remove_action == "Remove File and Clear Form":
+            st.session_state.uploaded_form_loaded = False
+            st.session_state.uploaded_file = None
+            st.session_state.form_data = {
                 "form_name": "",
                 "issue_type": "",
                 "fields": []
             }
-            st.sidebar.success(f"Loaded {selected_file}")
-        except Exception as error:
-            st.sidebar.error(f"Failed to load {selected_file}: {error}")
+            st.sidebar.success("File removed. Form cleared.")
+            st.rerun()
 
 elif form_mode == "New Form":
     if st.sidebar.button("Reset Form"):
@@ -53,6 +91,8 @@ elif form_mode == "New Form":
             "issue_type": "",
             "fields": []
         }
+        st.session_state.uploaded_form_loaded = False
+        st.session_state.uploaded_file = None
         st.rerun()
 
 
