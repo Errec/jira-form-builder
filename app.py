@@ -27,6 +27,18 @@ if "uploaded_form_loaded" not in st.session_state:
 if "uploaded_file" not in st.session_state:
     st.session_state.uploaded_file = None
 
+if "field_name" not in st.session_state:
+    st.session_state.field_name = ""
+
+if "field_type" not in st.session_state:
+    st.session_state.field_type = "text"
+
+if "required" not in st.session_state:
+    st.session_state.required = False
+
+if "options_input" not in st.session_state:
+    st.session_state.options_input = ""
+
 
 # ---- Sidebar ----
 st.sidebar.header("Form")
@@ -108,50 +120,66 @@ form_data["issue_type"] = st.text_input("Issue Type", form_data.get("issue_type"
 # ---- Fields Management ----
 st.subheader("Fields")
 
-with st.form("add_field_form", clear_on_submit=True):
-    col1, col2, col3 = st.columns(3)
+col1, col2, col3 = st.columns(3)
 
-    with col1:
-        field_name = st.text_input("Field Name").strip()
-    with col2:
-        field_type = st.selectbox(
-            "Field Type",
-            [
-                "text", "textarea", "select", "number", "date",
-                "checkbox", "radio", "userpicker", "projectpicker",
-            ]
-        ).strip()
-    with col3:
-        required = st.checkbox("Required", value=False)
+with col1:
+    st.session_state.field_name = st.text_input("Field Name", st.session_state.field_name).strip()
 
-    options = []
-    if field_type in ["select", "checkbox", "radio"]:
-        options_input = st.text_input("Options (comma separated)").strip()
-        options = [opt.strip() for opt in options_input.split(",") if opt.strip()]
+with col2:
+    st.session_state.field_type = st.selectbox(
+        "Field Type",
+        [
+            "text", "textarea", "select", "number", "date",
+            "checkbox", "radio", "userpicker", "projectpicker",
+        ],
+        index=["text", "textarea", "select", "number", "date",
+               "checkbox", "radio", "userpicker", "projectpicker"].index(st.session_state.field_type)
+    ).strip()
 
-    submitted = st.form_submit_button("Add Field")
+with col3:
+    st.session_state.required = st.checkbox("Required", value=st.session_state.required)
 
-    if submitted:
-        if not field_name:
-            st.warning("Field name cannot be empty.")
-        elif any(f["name"].lower() == field_name.lower() for f in form_data["fields"]):
-            st.warning(f"Field '{field_name}' already exists.")
-        else:
-            form_data["fields"].append(
-                {
-                    "name": clean_string(field_name),
-                    "type": clean_string(field_type),
-                    "required": required,
-                    "options": options if options else None,
-                }
-            )
-            st.success(f"Field '{field_name}' added.")
+# ---- Options input shows dynamically if field_type needs it ----
+options = []
+if st.session_state.field_type in ["select", "checkbox", "radio"]:
+    st.session_state.options_input = st.text_input(
+        "Options (comma separated)", st.session_state.options_input
+    ).strip()
+    if st.session_state.options_input:
+        options = [opt.strip() for opt in st.session_state.options_input.split(",") if opt.strip()]
+
+# ---- Add Field button ----
+if st.button("Add Field"):
+    if not st.session_state.field_name:
+        st.warning("Field name cannot be empty.")
+    elif any(f["name"].lower() == st.session_state.field_name.lower() for f in form_data["fields"]):
+        st.warning(f"Field '{st.session_state.field_name}' already exists.")
+    else:
+        form_data["fields"].append(
+            {
+                "name": clean_string(st.session_state.field_name),
+                "type": clean_string(st.session_state.field_type),
+                "required": st.session_state.required,
+                "options": options if options else None,
+            }
+        )
+        st.success(f"Field '{st.session_state.field_name}' added.")
+        st.session_state.field_name = ""
+        st.session_state.field_type = "text"
+        st.session_state.required = False
+        st.session_state.options_input = ""
 
 
 # ---- Fields Preview ----
 if form_data["fields"]:
     st.subheader("Fields Preview")
     df = pd.DataFrame(form_data["fields"])
+
+    if 'options' in df.columns:
+        df['options'] = df['options'].apply(
+            lambda x: ", ".join(x) if isinstance(x, list) else ""
+        )
+
     st.dataframe(df, use_container_width=True)
 
 
