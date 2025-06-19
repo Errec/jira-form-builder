@@ -5,13 +5,11 @@ import pandas as pd
 from form_logic import parser
 from form_logic.utils import clean_string, export_form
 
-
 # Ensure local modules are found
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 st.set_page_config(page_title="Jira Form Builder", layout="wide")
 st.title("📄 Jira Form Builder")
-
 
 # ---- Initialize Session State ----
 if "form_data" not in st.session_state:
@@ -38,7 +36,6 @@ if "required" not in st.session_state:
 
 if "options_input" not in st.session_state:
     st.session_state.options_input = ""
-
 
 # ---- Sidebar ----
 st.sidebar.header("Form")
@@ -107,15 +104,12 @@ elif form_mode == "New Form":
         st.session_state.uploaded_file = None
         st.rerun()
 
-
 form_data = st.session_state.form_data
-
 
 # ---- Form Metadata ----
 st.subheader("Form Metadata")
 form_data["form_name"] = st.text_input("Form Name", form_data.get("form_name", "")).strip()
 form_data["issue_type"] = st.text_input("Issue Type", form_data.get("issue_type", "")).strip()
-
 
 # ---- Fields Management ----
 st.subheader("Fields")
@@ -192,7 +186,6 @@ if st.session_state.field_type in ["select", "checkbox", "radio"]:
 else:
     options = []
 
-
 # ---- Add Field button ----
 if st.button("Add Field"):
     if not st.session_state.field_name:
@@ -216,54 +209,69 @@ if st.button("Add Field"):
         st.session_state.required = False
         st.session_state.options_input = ""
 
-
 # ---- Fields Preview ----
 if form_data["fields"]:
     st.subheader("Fields Preview (Interactive)")
 
-    for field in form_data["fields"]:
+    indices_to_remove = []
+
+    for index, field in enumerate(form_data["fields"]):
         field_label = f"{field['name']} {'*' if field.get('required') else ''}"
         field_type = field.get("type")
         field_options = field.get("options") or []
 
-        if field_type in ["text", "textarea"]:
-            if field_type == "textarea":
-                st.text_area(field_label)
-            else:
-                st.text_input(field_label)
+        col_preview, col_trash = st.columns([20, 1])
 
-        elif field_type == "number":
-            st.number_input(field_label)
+        with col_preview:
+            if field_type in ["text", "textarea"]:
+                if field_type == "textarea":
+                    st.text_area(field_label, key=f"prev_textarea_{index}")
+                else:
+                    st.text_input(field_label, key=f"prev_text_{index}")
 
-        elif field_type == "date":
-            st.date_input(field_label)
+            elif field_type == "number":
+                st.number_input(field_label, key=f"prev_number_{index}")
 
-        elif field_type == "checkbox":
-            if field_options:
-                st.multiselect(field_label, field_options)
-            else:
-                st.checkbox(field_label)
+            elif field_type == "date":
+                st.date_input(field_label, key=f"prev_date_{index}")
 
-        elif field_type == "radio":
-            if field_options:
-                st.radio(field_label, field_options)
-            else:
-                st.radio(field_label, ["Option 1", "Option 2"])
+            elif field_type == "checkbox":
+                if field_options:
+                    st.multiselect(field_label, field_options, key=f"prev_checkbox_{index}")
+                else:
+                    st.checkbox(field_label, key=f"prev_checkboxsingle_{index}")
 
-        elif field_type == "select":
-            if field_options:
-                st.selectbox(field_label, field_options)
-            else:
-                st.selectbox(field_label, ["Option 1", "Option 2"])
+            elif field_type == "radio":
+                st.radio(field_label, field_options or ["Option 1", "Option 2"], key=f"prev_radio_{index}")
 
-        elif field_type == "userpicker":
-            st.text_input(f"{field_label} (User Picker)")
+            elif field_type == "select":
+                st.selectbox(field_label, field_options or ["Option 1", "Option 2"], key=f"prev_select_{index}")
 
-        elif field_type == "projectpicker":
-            st.text_input(f"{field_label} (Project Picker)")
+            elif field_type == "userpicker":
+                st.text_input(f"{field_label} (User Picker)", key=f"prev_user_{index}")
+
+            elif field_type == "projectpicker":
+                st.text_input(f"{field_label} (Project Picker)", key=f"prev_project_{index}")
+
+        with col_trash:
+            trash_style = """
+            <style>
+            div[data-testid="stButton"] button {
+                padding: 0.1rem 0.3rem;
+                font-size: 0.7rem;
+            }
+            </style>
+            """
+            st.markdown(trash_style, unsafe_allow_html=True)
+            if st.button("🗑️", key=f"delete_{index}"):
+                indices_to_remove.append(index)
+
+    if indices_to_remove:
+        for i in sorted(indices_to_remove, reverse=True):
+            del form_data["fields"][i]
+        st.rerun()
 
     st.info("This is a functional preview. Inputs are not connected to any backend.")
-
 
 # ---- Export ----
 st.subheader("Export Form")
