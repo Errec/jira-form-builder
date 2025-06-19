@@ -1,0 +1,14 @@
+form_name: Access Request
+issue_type: Access Request
+fields:
+  - name: Full Name
+    type: text
+    required: true
+  - name: Department
+    type: select
+    required: true
+    options: [IT, HR, Finance]
+  - name: Request Date
+    type: date
+    required: false
+screen: Access Request Screen
