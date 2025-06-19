@@ -139,14 +139,59 @@ with col2:
 with col3:
     st.session_state.required = st.checkbox("Required", value=st.session_state.required)
 
-# ---- Options input shows dynamically if field_type needs it ----
-options = []
+# ---- Options input and Import ----
+import_options = []
+
 if st.session_state.field_type in ["select", "checkbox", "radio"]:
     st.session_state.options_input = st.text_input(
         "Options (comma separated)", st.session_state.options_input
     ).strip()
-    if st.session_state.options_input:
-        options = [opt.strip() for opt in st.session_state.options_input.split(",") if opt.strip()]
+
+    with st.expander("📥 Import Options from CSV/XLSX"):
+        import_file = st.file_uploader(
+            "Upload CSV or Excel", type=["csv", "xlsx"], key="options_import"
+        )
+
+        if import_file:
+            try:
+                if import_file.name.endswith(".csv"):
+                    df = pd.read_csv(import_file)
+                elif import_file.name.endswith(".xlsx"):
+                    df = pd.read_excel(import_file)
+                else:
+                    st.error("Unsupported file format.")
+                    df = None
+
+                if df is not None:
+                    if df.shape[1] == 0:
+                        st.error("No columns found in the file.")
+                    else:
+                        import_column = st.selectbox("Select column", df.columns)
+
+                        import_options = (
+                            df[import_column]
+                            .dropna()
+                            .astype(str)
+                            .tolist()
+                        )
+
+                        if not import_options:
+                            st.error("Selected column has no valid data.")
+                        else:
+                            st.success(f"Imported {len(import_options)} options from file.")
+
+            except Exception as e:
+                st.error(f"Failed to load file: {e}")
+
+    manual_options = [
+        opt.strip() for opt in st.session_state.options_input.split(",")
+        if opt.strip()
+    ] if st.session_state.options_input else []
+
+    options = list(dict.fromkeys(manual_options + import_options))  # Unique and ordered
+else:
+    options = []
+
 
 # ---- Add Field button ----
 if st.button("Add Field"):
@@ -164,6 +209,8 @@ if st.button("Add Field"):
             }
         )
         st.success(f"Field '{st.session_state.field_name}' added.")
+
+        # Reset input fields
         st.session_state.field_name = ""
         st.session_state.field_type = "text"
         st.session_state.required = False
@@ -177,7 +224,7 @@ if form_data["fields"]:
     for field in form_data["fields"]:
         field_label = f"{field['name']} {'*' if field.get('required') else ''}"
         field_type = field.get("type")
-        options = field.get("options") or []
+        field_options = field.get("options") or []
 
         if field_type in ["text", "textarea"]:
             if field_type == "textarea":
@@ -192,20 +239,20 @@ if form_data["fields"]:
             st.date_input(field_label)
 
         elif field_type == "checkbox":
-            if options:
-                st.multiselect(field_label, options)
+            if field_options:
+                st.multiselect(field_label, field_options)
             else:
                 st.checkbox(field_label)
 
         elif field_type == "radio":
-            if options:
-                st.radio(field_label, options)
+            if field_options:
+                st.radio(field_label, field_options)
             else:
                 st.radio(field_label, ["Option 1", "Option 2"])
 
         elif field_type == "select":
-            if options:
-                st.selectbox(field_label, options)
+            if field_options:
+                st.selectbox(field_label, field_options)
             else:
                 st.selectbox(field_label, ["Option 1", "Option 2"])
 
