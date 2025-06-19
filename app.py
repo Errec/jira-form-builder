@@ -172,15 +172,50 @@ if st.button("Add Field"):
 
 # ---- Fields Preview ----
 if form_data["fields"]:
-    st.subheader("Fields Preview")
-    df = pd.DataFrame(form_data["fields"])
+    st.subheader("Fields Preview (Interactive)")
 
-    if 'options' in df.columns:
-        df['options'] = df['options'].apply(
-            lambda x: ", ".join(x) if isinstance(x, list) else ""
-        )
+    for field in form_data["fields"]:
+        field_label = f"{field['name']} {'*' if field.get('required') else ''}"
+        field_type = field.get("type")
+        options = field.get("options") or []
 
-    st.dataframe(df, use_container_width=True)
+        if field_type in ["text", "textarea"]:
+            if field_type == "textarea":
+                st.text_area(field_label)
+            else:
+                st.text_input(field_label)
+
+        elif field_type == "number":
+            st.number_input(field_label)
+
+        elif field_type == "date":
+            st.date_input(field_label)
+
+        elif field_type == "checkbox":
+            if options:
+                st.multiselect(field_label, options)
+            else:
+                st.checkbox(field_label)
+
+        elif field_type == "radio":
+            if options:
+                st.radio(field_label, options)
+            else:
+                st.radio(field_label, ["Option 1", "Option 2"])
+
+        elif field_type == "select":
+            if options:
+                st.selectbox(field_label, options)
+            else:
+                st.selectbox(field_label, ["Option 1", "Option 2"])
+
+        elif field_type == "userpicker":
+            st.text_input(f"{field_label} (User Picker)")
+
+        elif field_type == "projectpicker":
+            st.text_input(f"{field_label} (Project Picker)")
+
+    st.info("This is a functional preview. Inputs are not connected to any backend.")
 
 
 # ---- Export ----
