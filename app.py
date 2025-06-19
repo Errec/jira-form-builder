@@ -104,3 +104,19 @@ with col2:
             file_name=f"{form_name or 'form'}.json",
             mime="application/json",
         )
+
+# ---- Import ----
+st.subheader("Import Form")
+uploaded_file = st.file_uploader("Upload YAML file", type=["yaml", "yml"])
+
+if uploaded_file:
+    try:
+        imported_form = parser.load_uploaded_yaml(uploaded_file)
+        if imported_form:
+            form_data = imported_form
+            st.success("Form imported successfully.")
+            st.experimental_rerun()  # Force UI reload with imported data
+        else:
+            st.error("Uploaded file is empty or invalid.")
+    except Exception as error:
+        st.error(f"Failed to import file: {error}")
