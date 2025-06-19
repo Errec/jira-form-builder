@@ -77,3 +77,30 @@ if form_data["fields"]:
     st.subheader("Fields Preview")
     df = pd.DataFrame(form_data["fields"])
     st.dataframe(df, use_container_width=True)
+
+# ---- Export ----
+st.subheader("Export Form")
+
+export_data = export_form(form_name, issue_type, form_data["fields"])
+
+col1, col2 = st.columns(2)
+
+with col1:
+    if st.button("Download YAML"):
+        yaml_data = parser.export_to_yaml(export_data)
+        st.download_button(
+            label="Download YAML",
+            data=yaml_data,
+            file_name=f"{form_name or 'form'}.yaml",
+            mime="text/yaml",
+        )
+
+with col2:
+    if st.button("Download JSON"):
+        json_data = parser.export_to_json(export_data)
+        st.download_button(
+            label="Download JSON",
+            data=json_data,
+            file_name=f"{form_name or 'form'}.json",
+            mime="application/json",
+        )
