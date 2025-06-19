@@ -57,3 +57,23 @@ with st.form("add_field_form", clear_on_submit=True):
         ]
 
     submitted = st.form_submit_button("Add Field")
+
+    if submitted:
+        if not field_name.strip():
+            st.warning("Field name cannot be empty.")
+        elif any(f["name"].lower() == field_name.strip().lower() for f in form_data["fields"]):
+            st.warning(f"Field '{field_name}' already exists.")
+        else:
+            form_data["fields"].append(
+                {
+                    "name": clean_string(field_name),
+                    "type": clean_string(field_type),
+                    "required": required,
+                    "options": options if options else None,
+                }
+            )
+# ---- Fields Preview ----
+if form_data["fields"]:
+    st.subheader("Fields Preview")
+    df = pd.DataFrame(form_data["fields"])
+    st.dataframe(df, use_container_width=True)
