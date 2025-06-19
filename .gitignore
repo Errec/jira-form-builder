@@ -1,0 +1,58 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+*.pkl
+*.db
+*.sqlite3
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+*.env
+
+# VS Code
+.vscode/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# macOS
+.DS_Store
+
+# Logs
+*.log
+
+# OS
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Streamlit
+.streamlit/config.toml
+
+# YAML/JSON cache
+*.yaml~
+*.yml~
+*.json~
+
+# Export files
+*.zip
+*.tar.gz
+*.tar
+*.bak
+*.tmp
+
+# Forms output files
+/forms/*.yaml
+/forms/*.json
+/forms/*.yml
+
+# Python package
+dist/
+build/
+*.egg-info/
