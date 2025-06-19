@@ -3,7 +3,7 @@
 
 A tool to visually create Jira form configurations — including Issue Types, Custom Fields, Screens, and Screen Schemes — and fully automate their creation inside Jira Server/Data Center using a Groovy script with Scriptrunner.
 
-- 🖥️ Built with Python + Streamlit (no frontend development needed)
+- 🖥️ Built with Python + Streamlit (zero frontend coding)
 - ⚙️ Generates YAML/JSON form specifications
 - 🚀 Includes a Groovy script to automate importing configurations into Jira (fields, screens, issue types)
 - 🔥 No manual Jira admin clicks
@@ -11,61 +11,43 @@ A tool to visually create Jira form configurations — including Issue Types, Cu
 
 ---
 
-## 🔥 Features
+## 🎯 Goal
 
-- Create Jira issue forms visually with a simple UI
-- Define:
+Internal tool for your team to easily create, visualize, and test Jira ticket forms.
+
+The Governance team receives the form definition (YAML/JSON) and applies it into Jira using the provided **Groovy script with Scriptrunner**, automating the process.
+
+---
+
+## ✅ Features
+
+- Create Jira form configurations:
   - Issue Types
-  - Custom Fields (text, textarea, select, checkbox, radio, date, number, user picker, project picker)
+  - Custom Fields: Text, Textarea, Select, Checkbox, Radio buttons, Number, Date, User Picker, Project Picker
   - Screens and Screen Schemes
-- Export as **YAML** or **JSON**
-- Fully automate Jira configuration with an included **Groovy script for Scriptrunner**
-- No Docker, no frontend coding, runs locally
+- Visual Preview of forms
+- Input validation (duplicate fields, empty names)
+- Export to YAML and JSON
+- Import from existing YAML
+- Works locally — no Docker, no frontend stack
+- Automation of Jira configurations via Groovy + Scriptrunner
+- Extensible: clean backend modules for CLI, APIs, future expansions
 
 ---
 
-## 📦 Tech Stack
+## 🚀 Tech Stack
 
-| Layer | Stack |
-|-------|-------|
-| UI    | Python + Streamlit |
-| Data  | YAML / JSON |
-| Backend (Jira) | Groovy + Scriptrunner |
-| Runtime | Python 3.8+ |
-
----
-
-## 🚀 Installation
-
-### Python App
-
-```bash
-# Clone the repository
-git clone https://github.com/your-repo/jira-form-builder.git
-cd jira-form-builder
-
-# Create virtual environment
-python -m venv .venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Run the app
-streamlit run app.py
-```
-
-### Groovy Script
-
-- Place the YAML file in Jira's server directory (e.g., `/var/atlassian/application-data/jira/import/`).
-- Open **Scriptrunner → Script Console** in Jira.
-- Paste the Groovy script.
-- Adjust the YAML file path and project key.
-- Run — the script will create issue types, screens, custom fields, and apply them.
+| Layer    | Stack                                  |
+|----------|-----------------------------------------|
+| UI       | Python + Streamlit                     |
+| Data     | YAML / JSON                             |
+| Backend  | Groovy + Scriptrunner (Jira DC)         |
+| Utilities| Python modules (`parser`, `utils`, etc.)|
+| Runtime  | Python 3.8+                             |
 
 ---
 
-## 🛠️ Project Structure
+## 🏗️ Project Structure
 
 ```
 jira-form-builder/
@@ -74,15 +56,27 @@ jira-form-builder/
 │   ├── __init__.py
 │   ├── parser.py
 │   ├── validator.py
-│   └── schema.py
-├── forms/                   # YAML/JSON files
+│   ├── schema.py
+│   └── utils.py
+├── forms/
 │   └── example-form.yaml
-├── scriptrunner/            # Groovy script
+├── scriptrunner/
 │   └── form_importer.groovy
 ├── requirements.txt
 ├── .pylintrc
-└── README.md
+├── README.md
+└── LICENSE
 ```
+
+---
+
+## 🚦 Usage Workflow
+
+1. Run the Python app with Streamlit
+2. Create the form → name, issue type, fields
+3. Export as YAML
+4. The Governance team runs the Groovy script in Jira
+5. Script creates the Issue Type, Custom Fields, Screen, and Screen Scheme
 
 ---
 
@@ -107,29 +101,23 @@ screen: Access Request Screen
 
 ---
 
-## ⚠️ License
+## 🔐 License
 
-**Non-Commercial License**
+**License Type:** **Non-Commercial Custom License**  
+This is not a standard OSI license. It permits:  
+- Personal use  
+- Non-profit organizations  
+- Educational use  
+- Internal company use if not monetized  
 
-This software is free for:
-- Personal use
-- Educational use
-- Non-profit organizations
-- Internal use in companies **only if not monetized**
-
-**It is NOT free if:**
-- Your company uses this tool as part of a commercial offering
-- You offer this tool as a paid service or product
-- You are generating revenue from services based on this tool
-
-→ For commercial licenses, please contact the author.
+**Commercial use is prohibited without explicit written consent from the author.**
 
 ---
 
-## 📜 LICENSE
+## 📜 LICENSE Summary
 
 ```text
-Copyright (c) 2025
+Copyright (c) 2025 Raniro Coelho
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), for 
@@ -144,14 +132,21 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND.
 
 ---
 
-## 🤝 Contact
+## 📫 Contact
 
-For commercial licensing, issues, or contributions:  
-**LinkedIn:** [https://www.linkedin.com/in/raniro](https://www.linkedin.com/in/raniro)  
+- **Email:** ranirocoelho@gmail.com  
+- **GitHub:** [https://github.com/Errec](https://github.com/Errec)  
+- **LinkedIn:** [https://linkedin.com/in/raniro](https://linkedin.com/in/raniro)  
 
 ---
 
-## ⭐️ Contributions
+## ⭐ Contributions
 
-- Issues, bug reports, and feature requests are welcome.
-- Pull requests are welcome for non-commercial improvements.
+- Issues, feature requests, and pull requests are welcome for non-commercial improvements.
+
+---
+
+## 🏆 Status
+
+✅ Production ready.  
+→ Clean code, modular architecture, extensible for CLI or API automation.
